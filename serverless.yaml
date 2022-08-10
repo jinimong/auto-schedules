@@ -1,0 +1,38 @@
+service: auto-schedules
+
+useDotenv: true
+
+package:
+  patterns:
+    - '*.py'
+    - '!venv/**'
+    - '!env.yml'
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: ap-northeast-2
+  stage: ${opt:stage, "dev"}
+  profile: jwkim
+  memorySize: 1024
+  timeout: 10
+  environment:
+    ATTENDANCE_ID: ${env:ATTENDANCE_ID}
+    ATTENDANCE_PW: ${env:ATTENDANCE_PW}
+    ATTENDANCE_LOGIN_URL: ${env:ATTENDANCE_LOGIN_URL}
+    ATTENDANCE_GET_POINT_URL: ${env:ATTENDANCE_GET_POINT_URL}
+    ATTENDANCE_POST_POINT_URL: ${env:ATTENDANCE_POST_POINT_URL}
+
+plugins:
+  - serverless-python-requirements
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  app:
+    handler: attendance.handler
+    timeout: 120
+    events:
+      - schedule:
+          rate: rate(64 minutes)
