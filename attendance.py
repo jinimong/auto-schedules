@@ -9,11 +9,7 @@ def throw_coin():
     return random.choice([True, False])
 
 
-
-def handler(event, context):
-    if not all([throw_coin(), throw_coin()]):
-        return
-
+def run():
     LOGIN_INFO = {
         "mb_id": os.getenv("ATTENDANCE_ID", ""),
         "mb_password": os.getenv("ATTENDANCE_PW", ""),
@@ -24,7 +20,9 @@ def handler(event, context):
 
     with requests.Session() as s:
         login_req = s.post(LOGIN_URL, data=LOGIN_INFO)
-        print(login_req.status_code)
+        if login_req.status_code != 200:
+            print("Login Fail")
+            return
 
         attendance_page = s.get(GET_POINT_URL)
         soup = bs(attendance_page.text, "html.parser")
@@ -41,4 +39,13 @@ def handler(event, context):
             data=ATTENDANCE_INFO,
         )
 
-        print(attendance_req.status_code)
+        if attendance_req.status_code != 200:
+            print("Attendance Fail")
+            return
+
+
+def handler(event, context):
+    if not all([throw_coin(), throw_coin()]):
+        return
+
+    run()
